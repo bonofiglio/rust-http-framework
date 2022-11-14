@@ -95,7 +95,7 @@ impl StatusCodes {
         }
     }
 
-    pub fn as_string(&self) -> &str {
+    pub fn as_reason_phrase(&self) -> &str {
         match self {
             StatusCodes::Continue => "Continue",
             StatusCodes::SwitchingProtocols => "Switching Protocols",
@@ -141,7 +141,7 @@ impl StatusCodes {
         }
     }
 
-    pub fn as_response(&self) -> String {
-        format!("{} {}", self.as_code(), self.as_string())
+    pub fn to_string(&self) -> String {
+        format!("{} {}", self.as_code(), self.as_reason_phrase())
     }
 }
