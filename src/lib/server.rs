@@ -4,17 +4,18 @@ use async_std::{
     stream::StreamExt,
     task,
 };
+use routes::{Route, RouteHandler};
 use std::{collections::HashMap, io::Error};
 
-use crate::lib::status_codes::StatusCodes;
-
-use super::{message, method::HTTPMethod, request::Request, response::Response};
+use http_types::{
+    message, method::HTTPMethod, request::Request, response::Response, status_codes::StatusCodes,
+};
 
 pub struct Server {
     address: String,
     port: String,
     listener: Option<TcpListener>,
-    handlers: HashMap<HTTPMethod, Vec<fn(&Request) -> Response>>,
+    handlers: HashMap<HTTPMethod, Vec<RouteHandler>>,
 }
 
 impl Server {
@@ -164,16 +165,16 @@ impl Server {
         task::block_on(self._init());
     }
 
+    pub fn add_routes(&mut self, routes: Vec<Route>) {
+        for route in routes {
+            self.add_handler(route.method, route.handler)
+        }
+    }
+
     pub fn add_handler(&mut self, method: HTTPMethod, handler: fn(&Request) -> Response) {
         let handlers_vector = Server::get_handlers_vector(self, &method);
 
         handlers_vector.push(handler);
-    }
-
-    pub fn add_handlers(&mut self, method: HTTPMethod, handlers: Vec<fn(&Request) -> Response>) {
-        let handlers_vector = Server::get_handlers_vector(self, &method);
-
-        handlers_vector.extend(&handlers);
     }
 
     async fn listen(&self) {

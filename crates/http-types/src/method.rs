@@ -11,6 +11,20 @@ pub enum HTTPMethod {
 }
 
 impl HTTPMethod {
+    pub fn from(method_string: &str) -> Option<HTTPMethod> {
+        match method_string {
+            "OPTIONS" => Some(HTTPMethod::OPTIONS),
+            "GET" => Some(HTTPMethod::GET),
+            "HEAD" => Some(HTTPMethod::HEAD),
+            "POST" => Some(HTTPMethod::POST),
+            "PUT" => Some(HTTPMethod::PUT),
+            "DELETE" => Some(HTTPMethod::DELETE),
+            "TRACE" => Some(HTTPMethod::TRACE),
+            "CONNECT" => Some(HTTPMethod::CONNECT),
+            _ => None,
+        }
+    }
+
     pub fn as_str(&self) -> &str {
         match self {
             HTTPMethod::OPTIONS => "OPTIONS",

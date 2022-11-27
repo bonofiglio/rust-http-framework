@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::status_codes::StatusCodes;
+use crate::status_codes::StatusCodes;
 
 pub fn parse_headers(headers_string: &str) -> Result<HashMap<String, String>, StatusCodes> {
     let header_lines = headers_string.split("\r\n");

@@ -255,6 +255,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "http-types"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+]
+
+[[package]]
 name = "instant"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -360,10 +367,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "route-macro-attribute"
+version = "0.1.0"
+dependencies = [
+ "http-types",
+ "quote",
+ "routes",
+ "syn",
+]
+
+[[package]]
+name = "routes"
+version = "0.1.0"
+dependencies = [
+ "http-types",
+]
+
+[[package]]
 name = "rust-http"
 version = "0.1.0"
 dependencies = [
  "async-std",
+ "http-types",
+ "route-macro-attribute",
+ "routes",
 ]
 
 [[package]]

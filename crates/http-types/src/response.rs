@@ -12,12 +12,13 @@ pub struct Response {
 
 impl Response {
     pub fn new(status: StatusCodes, mut headers: HashMap<String, String>, body: &str) -> Response {
-        headers.insert(
-            "Content-Length".to_owned(),
-            body.as_bytes().len().to_string(),
-        );
+        let content_length = body.as_bytes().len().to_string();
+        headers.entry("content-length".to_owned()).and_modify(|e| *e = content_length.to_owned()).or_insert(content_length);
+        
+        if !headers.contains_key("content-type") {
+            headers.insert("content-type".to_owned(), "text/plain".to_owned());
+        }
 
-        headers.insert("Content-Type".to_owned(), "text/plain".to_owned());
         Response {
             status,
             headers,

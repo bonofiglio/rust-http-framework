@@ -1,41 +1,30 @@
 mod lib;
-
-use async_std::task;
 use std::collections::HashMap;
-use std::io::Error;
 
-use lib::request::Request;
-use lib::response::Response;
+use http_types::method::HTTPMethod;
+use http_types::request::Request;
+use http_types::response::Response;
+use http_types::status_codes::StatusCodes;
+use route_macro_attribute::route;
+use routes::generate_routes;
+use routes::Route;
+
 use lib::server::Server;
 
-use crate::lib::status_codes::StatusCodes;
-
-fn get<'a>(req: &Request) -> Response<'a> {
-    println!("{:?}", *req);
-
-    Response::new(
-        StatusCodes::OK,
-        HashMap::from([("Cache-Control", "no-cache")]),
-        "hello",
-    )
+#[route("GET", "/")]
+fn get(req: &Request) -> Response {
+    Response::new(StatusCodes::OK, HashMap::new(), "it works!")
 }
 
-async fn init() -> Result<(), Error> {
-    let mut server = Server::new("3000").await?;
-
-    server.add_handler(&get);
-
-    server.listen().await;
-
-    Ok(())
+#[route("POST", "/")]
+fn post(req: &Request) -> Response {
+    Response::new(StatusCodes::OK, HashMap::new(), &req.body)
 }
 
 fn main() {
-    // let message = Request::from(
-    //     "POST HTTP/1.1\r\nAuthorization: Basic\r\nuser-agent: Chrome\r\n\r\n{\"name\": \"Name\"}",
-    // );
+    let mut server = Server::new("3000").unwrap();
 
-    println!("1");
+    server.add_routes(generate_routes![get, post]);
 
-    task::block_on(init());
+    server.init();
 }

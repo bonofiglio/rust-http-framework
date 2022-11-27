@@ -1,0 +1,11 @@
+[package]
+name = "routes"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["lib"]
+
+[dependencies]
+http-types = { path = "../http-types" }
