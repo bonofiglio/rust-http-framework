@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum HTTPMethod {
     OPTIONS,
     GET,

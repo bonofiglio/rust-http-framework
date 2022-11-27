@@ -4,22 +4,24 @@ use async_std::{io::WriteExt, net::TcpStream};
 
 use super::status_codes::StatusCodes;
 
-pub struct Response<'a> {
+pub struct Response {
     status: StatusCodes,
-    headers: HashMap<&'a str, &'a str>,
-    body: &'a str,
+    headers: HashMap<String, String>,
+    body: String,
 }
 
-impl<'a> Response<'a> {
-    pub fn new(
-        status: StatusCodes,
-        headers: HashMap<&'a str, &'a str>,
-        body: &'a str,
-    ) -> Response<'a> {
+impl Response {
+    pub fn new(status: StatusCodes, mut headers: HashMap<String, String>, body: &str) -> Response {
+        headers.insert(
+            "Content-Length".to_owned(),
+            body.as_bytes().len().to_string(),
+        );
+
+        headers.insert("Content-Type".to_owned(), "text/plain".to_owned());
         Response {
             status,
             headers,
-            body,
+            body: body.to_owned(),
         }
     }
 

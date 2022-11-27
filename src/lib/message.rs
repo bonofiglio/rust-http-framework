@@ -1,14 +1,19 @@
 use std::collections::HashMap;
 
-pub fn parse_headers(headers_string: &str) -> Option<HashMap<&str, &str>> {
+use super::status_codes::StatusCodes;
+
+pub fn parse_headers(headers_string: &str) -> Result<HashMap<String, String>, StatusCodes> {
     let header_lines = headers_string.split("\r\n");
-    let mut headers: HashMap<&str, &str> = HashMap::new();
+    let mut headers: HashMap<String, String> = HashMap::new();
 
     for line in header_lines {
-        let (k, v) = line.split_once(':')?;
+        let Some((k, v)) = line.split_once(':') else {
+            println!("Error(parse_headers): incorrect string format.\n{}\n", line);
+            return Err(StatusCodes::BadRequest);
+        };
 
-        headers.insert(k.trim(), v.trim());
+        headers.insert(k.trim().to_lowercase().to_owned(), v.trim().to_owned());
     }
 
-    Some(headers)
+    Ok(headers)
 }
