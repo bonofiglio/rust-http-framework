@@ -5,7 +5,7 @@ use async_std::{
     task,
 };
 use routes::{Route, RouteHandler};
-use std::{collections::HashMap, io::Error};
+use std::{collections::HashMap, io::Error, vec};
 
 use http_types::{
     message, method::HTTPMethod, request::Request, response::Response, status_codes::StatusCodes,
@@ -15,7 +15,7 @@ pub struct Server {
     address: String,
     port: String,
     listener: Option<TcpListener>,
-    handlers: HashMap<HTTPMethod, Vec<RouteHandler>>,
+    handlers: HashMap<(HTTPMethod, String), Vec<RouteHandler>>,
 }
 
 impl Server {
@@ -86,7 +86,7 @@ impl Server {
             address: "127.0.0.1".to_owned(),
             port: port.to_owned(),
             listener: None,
-            handlers: Server::create_empty_handlers(),
+            handlers: HashMap::new(),
         })
     }
 
@@ -95,20 +95,20 @@ impl Server {
             address: address.to_owned(),
             port: port.to_owned(),
             listener: None,
-            handlers: Server::create_empty_handlers(),
+            handlers: HashMap::new(),
         })
     }
 
     // Private functions
     async fn handle_connection(
         mut stream: TcpStream,
-        handlers: HashMap<HTTPMethod, Vec<fn(&Request) -> Response>>,
+        handlers: HashMap<(HTTPMethod, String), Vec<fn(&Request) -> Response>>,
     ) {
         let request = Server::decode_request(&stream).await;
 
         match request {
             Ok(request) => {
-                let handlers_vector = handlers.get(&request.method);
+                let handlers_vector = handlers.get(&(request.method, request.uri.to_owned()));
 
                 match handlers_vector {
                     Some(handlers_vector) => {
@@ -129,29 +129,7 @@ impl Server {
         };
     }
 
-    fn create_empty_handlers() -> HashMap<HTTPMethod, Vec<fn(&Request) -> Response>> {
-        HashMap::from([
-            (HTTPMethod::OPTIONS, Vec::new()),
-            (HTTPMethod::GET, Vec::new()),
-            (HTTPMethod::HEAD, Vec::new()),
-            (HTTPMethod::POST, Vec::new()),
-            (HTTPMethod::PUT, Vec::new()),
-            (HTTPMethod::DELETE, Vec::new()),
-            (HTTPMethod::TRACE, Vec::new()),
-            (HTTPMethod::CONNECT, Vec::new()),
-        ])
-    }
-
     // Private methods
-    fn get_handlers_vector(&mut self, method: &HTTPMethod) -> &mut Vec<fn(&Request) -> Response> {
-        let result = self.handlers.get_mut(method);
-
-        match result {
-            Some(handlers_vector) => handlers_vector,
-            None => panic!("Could not find handlers vector"),
-        }
-    }
-
     async fn _init(&mut self) -> Result<(), Error> {
         self.listener = Some(TcpListener::bind(format!("{}:{}", self.address, self.port)).await?);
 
@@ -167,14 +145,20 @@ impl Server {
 
     pub fn add_routes(&mut self, routes: Vec<Route>) {
         for route in routes {
-            self.add_handler(route.method, route.handler)
+            self.add_handler(route.method, route.path, route.handler)
         }
     }
 
-    pub fn add_handler(&mut self, method: HTTPMethod, handler: fn(&Request) -> Response) {
-        let handlers_vector = Server::get_handlers_vector(self, &method);
-
-        handlers_vector.push(handler);
+    pub fn add_handler(
+        &mut self,
+        method: HTTPMethod,
+        path: String,
+        handler: fn(&Request) -> Response,
+    ) {
+        self.handlers
+            .entry((method, path))
+            .and_modify(|e| e.push(handler))
+            .or_insert(vec![handler]);
     }
 
     async fn listen(&self) {

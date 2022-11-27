@@ -21,10 +21,15 @@ fn post(req: &Request) -> Response {
     Response::new(StatusCodes::OK, HashMap::new(), &req.body)
 }
 
+#[route("GET", "/users")]
+fn get_users(req: &Request) -> Response {
+    Response::new(StatusCodes::OK, HashMap::new(), "[{\"name\": \"Daniel\"}]")
+}
+
 fn main() {
     let mut server = Server::new("3000").unwrap();
 
-    server.add_routes(generate_routes![get, post]);
+    server.add_routes(generate_routes![get, post, get_users]);
 
     server.init();
 }
