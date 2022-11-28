@@ -5,7 +5,7 @@ use http_types::method::HTTPMethod;
 use http_types::request::Request;
 use http_types::response::Response;
 use http_types::status_codes::StatusCodes;
-use http_types::uri::UriParser;
+use http_types::uri_parser::UriParser;
 use route_attribute_macro::route;
 use routes::generate_routes;
 use routes::Route;
@@ -14,7 +14,11 @@ use lib::server::Server;
 
 #[route("GET", "/:p1")]
 fn get_0(req: &Request) -> Response {
-    Response::new(StatusCodes::OK, HashMap::new(), &format!("0: {}", &p1))
+    Response::new(
+        StatusCodes::OK,
+        HashMap::new(),
+        &format!("0: {}, search: {:#?}", &p1, req.search_params),
+    )
 }
 
 #[route("GET", "/users/:slug")]

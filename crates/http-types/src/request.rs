@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::search_params::SearchParams;
+
 use super::{method::HTTPMethod, status_codes::StatusCodes};
 
 #[derive(Debug)]
@@ -8,6 +10,7 @@ pub struct Request {
     pub uri: String,
     pub headers: HashMap<String, String>,
     pub body: String,
+    pub search_params: SearchParams,
 }
 
 impl Request {
@@ -16,12 +19,14 @@ impl Request {
         uri: String,
         headers: HashMap<String, String>,
         body: String,
+        search_params: SearchParams,
     ) -> Request {
         Request {
             method,
             uri,
             headers,
             body,
+            search_params,
         }
     }
 

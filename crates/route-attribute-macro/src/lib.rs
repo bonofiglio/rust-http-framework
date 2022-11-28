@@ -1,4 +1,4 @@
-use http_types::{method::HTTPMethod, uri::UriParser};
+use http_types::{method::HTTPMethod, uri_parser::UriParser};
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, parse_quote, FnArg, ItemFn, Pat, PatType};

@@ -7,7 +7,10 @@ use async_std::{
 use routes::Route;
 use std::{collections::HashMap, io::Error, vec};
 
-use http_types::{message, request::Request, response::Response, status_codes::StatusCodes};
+use http_types::{
+    message, request::Request, response::Response, search_params::SearchParams,
+    status_codes::StatusCodes, uri_parser::UriParser,
+};
 
 pub struct Server {
     address: String,
@@ -75,8 +78,9 @@ impl Server {
             return Err(StatusCodes::BadRequest);
         };
         let (method, uri) = Request::parse_request_line(request_line)?;
+        let search_params = SearchParams::from(UriParser::split_search(&uri).1);
 
-        Ok(Request::new(method, uri, headers, body))
+        Ok(Request::new(method, uri, headers, body, search_params))
     }
 
     pub fn new(port: &str) -> Result<Server, Error> {
