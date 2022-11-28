@@ -6,7 +6,7 @@ use http_types::request::Request;
 use http_types::response::Response;
 use http_types::status_codes::StatusCodes;
 use http_types::uri::UriParser;
-use route_macro_attribute::route;
+use route_attribute_macro::route;
 use routes::generate_routes;
 use routes::Route;
 

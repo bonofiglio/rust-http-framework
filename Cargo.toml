@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 async-std = "1.12.0"
-route-macro-attribute = { path = "./crates/route-macro-attribute" }
+route-attribute-macro = { path = "./crates/route-attribute-macro" }
 http-types = { path = "./crates/http-types" }
 routes = { path = "./crates/routes" }
 
