@@ -4,18 +4,16 @@ use async_std::{
     stream::StreamExt,
     task,
 };
-use routes::{Route, RouteHandler};
+use routes::Route;
 use std::{collections::HashMap, io::Error, vec};
 
-use http_types::{
-    message, method::HTTPMethod, request::Request, response::Response, status_codes::StatusCodes,
-};
+use http_types::{message, request::Request, response::Response, status_codes::StatusCodes};
 
 pub struct Server {
     address: String,
     port: String,
     listener: Option<TcpListener>,
-    handlers: HashMap<(HTTPMethod, String), Vec<RouteHandler>>,
+    routes: Vec<Route>,
 }
 
 impl Server {
@@ -86,7 +84,7 @@ impl Server {
             address: "127.0.0.1".to_owned(),
             port: port.to_owned(),
             listener: None,
-            handlers: HashMap::new(),
+            routes: Vec::new(),
         })
     }
 
@@ -95,30 +93,31 @@ impl Server {
             address: address.to_owned(),
             port: port.to_owned(),
             listener: None,
-            handlers: HashMap::new(),
+            routes: Vec::new(),
         })
     }
 
     // Private functions
-    async fn handle_connection(
-        mut stream: TcpStream,
-        handlers: HashMap<(HTTPMethod, String), Vec<fn(&Request) -> Response>>,
-    ) {
+    async fn handle_connection(mut stream: TcpStream, routes: Vec<Route>) {
         let request = Server::decode_request(&stream).await;
 
         match request {
             Ok(request) => {
-                let handlers_vector = handlers.get(&(request.method, request.uri.to_owned()));
+                let route_handlers: Vec<_> = routes
+                    .iter()
+                    .filter(|route| route.uri_parser.matches(&request.uri))
+                    .collect();
 
-                match handlers_vector {
-                    Some(handlers_vector) => {
-                        for handler in handlers_vector {
-                            let response = handler(&request);
+                if route_handlers.len() == 0 {
+                    let response = Response::new(StatusCodes::NotFound, HashMap::new(), "");
+                    response.send(&mut stream).await;
+                    return;
+                }
 
-                            response.send(&mut stream).await;
-                        }
-                    }
-                    None => {}
+                for route in route_handlers {
+                    let response = (route.handler)(&request);
+
+                    response.send(&mut stream).await;
                 }
             }
             Err(status) => {
@@ -143,22 +142,8 @@ impl Server {
         task::block_on(self._init());
     }
 
-    pub fn add_routes(&mut self, routes: Vec<Route>) {
-        for route in routes {
-            self.add_handler(route.method, route.path, route.handler)
-        }
-    }
-
-    pub fn add_handler(
-        &mut self,
-        method: HTTPMethod,
-        path: String,
-        handler: fn(&Request) -> Response,
-    ) {
-        self.handlers
-            .entry((method, path))
-            .and_modify(|e| e.push(handler))
-            .or_insert(vec![handler]);
+    pub fn add_routes(&mut self, routes: &mut Vec<Route>) {
+        self.routes.append(routes)
     }
 
     async fn listen(&self) {
@@ -167,7 +152,7 @@ impl Server {
         while let Some(stream) = incoming.next().await {
             match stream {
                 Ok(stream) => {
-                    let handlers_clone = self.handlers.clone();
+                    let handlers_clone = self.routes.clone();
                     task::spawn(Server::handle_connection(stream, handlers_clone));
                 }
                 Err(error) => {
