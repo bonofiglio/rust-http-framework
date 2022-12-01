@@ -3,6 +3,10 @@ name = "rust-http-framework"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+path = "src/lib.rs"
+crate-type = ["lib"]
+
 [dependencies]
 async-std = "1.12.0"
 route-attribute-macro = { path = "./crates/route-attribute-macro" }

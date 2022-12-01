@@ -1,4 +1,4 @@
-use http_types::{method::HTTPMethod, request::Request, response::Response, uri_parser::UriParser};
+use http_types::{HTTPMethod, Request, Response, UriParser};
 
 pub type RouteHandler = fn(&Request) -> Response;
 

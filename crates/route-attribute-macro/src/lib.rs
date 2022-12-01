@@ -1,4 +1,4 @@
-use http_types::{method::HTTPMethod, uri_parser::UriParser};
+use http_types::{HTTPMethod, UriParser};
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, parse_quote, FnArg, ItemFn, Pat, PatType};
@@ -42,7 +42,7 @@ pub fn route(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     let Some(request_arg) = input_fn.sig.inputs.first() else {
-        panic!("Expected 1 argument, got 0");
+        panic!("expected 1 argument, got 0");
     };
     let request_arg_ident = match request_arg {
         FnArg::Typed(PatType { pat, .. }) => match &**pat {
