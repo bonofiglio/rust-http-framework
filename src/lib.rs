@@ -108,7 +108,7 @@ impl Server {
             Ok(request) => {
                 let route_handlers: Vec<_> = routes
                     .iter()
-                    .filter(|route| route.uri_parser.matches(&request.uri))
+                    .filter(|route| route.method == request.method && route.uri_parser.matches(&request.uri))
                     .collect();
 
                 if route_handlers.len() == 0 {
