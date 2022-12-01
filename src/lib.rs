@@ -108,7 +108,9 @@ impl Server {
             Ok(request) => {
                 let route_handlers: Vec<_> = routes
                     .iter()
-                    .filter(|route| route.method == request.method && route.uri_parser.matches(&request.uri))
+                    .filter(|route| {
+                        route.method == request.method && route.uri_parser.matches(&request.uri)
+                    })
                     .collect();
 
                 if route_handlers.len() == 0 {
@@ -141,7 +143,7 @@ impl Server {
     }
 
     // Public methods
-    pub fn init(&mut self) {
+    pub fn start(&mut self) {
         match task::block_on(self._init()) {
             Ok(_) => {}
             Err(e) => {

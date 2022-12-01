@@ -63,5 +63,5 @@ fn main() {
     server.add_routes(generate_routes![get_root, get_user, create_account]);
 
     // Initialize the server
-    server.init();
+    server.start();
 }
